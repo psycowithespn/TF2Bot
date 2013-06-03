@@ -24,8 +24,8 @@ public class BotMain extends Thread {
         String message = event.getMessage();
         if (message.startsWith(".")) {
             String command = message.substring(1).split(" ")[0];
-            if (command.equalsIgnoreCase("test")) {
-                event.getChannel().say("reply");
+            if (command.equalsIgnoreCase(".botsnack")) {
+                event.getChannel().say("om nom nom nom!");
             }
         }
     }
