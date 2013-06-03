@@ -1,5 +1,8 @@
 package com.chaseoes.tf2bot;
 
+import com.chaseoes.tf2bot.commands.BotSnackCommand;
+import com.chaseoes.tf2bot.commands.LatestCommand;
+import jerklib.Channel;
 import jerklib.ConnectionManager;
 import jerklib.ProfileImpl;
 import jerklib.Session;
@@ -7,29 +10,47 @@ import jerklib.events.ChannelMsgEvent;
 
 public class BotMain extends Thread {
 
-    ConnectionManager conn;
-    Session session;
+    private static BotMain instance;
+
+    private ConnectionManager conn;
+    private Session session;
+    private Channel channel;
+    private CommandManager mngr = new CommandManager();
 
     public static void main(String[] args) {
-        new BotMain().start();
+        instance = new BotMain();
+        instance.start();
+    }
+
+    public static BotMain getInstance() {
+        return instance;
+    }
+
+    public Session getSession() {
+        return session;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 
     public void run() {
+        initCommands();
         conn = new ConnectionManager(new ProfileImpl("TF2", "TF2", null, null));
         session = conn.requestConnection("irc.esper.net");
         session.addIRCEventListener(new EventListener(this));
     }
 
     public void handleMessage(ChannelMsgEvent event) {
-        String message = event.getMessage();
-        if (message.startsWith(".")) {
-            String command = message.substring(1).split(" ")[0];
-            if (command.equalsIgnoreCase("botsnack")) {
-                event.getChannel().say("om nom nom nom!");
-            }
-            if (command.equalsIgnoreCase("latest")) {
-                event.getChannel().say("Latest TF2 build: http://ci.chaseoes.com/job/TF2/lastBuild/artifact/target/TF2.jar");
-            }
-        }
+        mngr.handleMessageEvent(event);
+    }
+
+    public void initCommands() {
+        mngr.register("botsnack", new BotSnackCommand());
+        mngr.register("latest", new LatestCommand());
     }
 }
